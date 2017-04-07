@@ -1,35 +1,19 @@
 package federation.graphics;
 
-import static org.lwjgl.opengl.GL11.GL_BACK;
-import static org.lwjgl.opengl.GL11.GL_BLEND;
-import static org.lwjgl.opengl.GL11.GL_CCW;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.GL_VERSION;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glCullFace;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glFrontFace;
-import static org.lwjgl.opengl.GL11.glGetString;
+import static org.lwjgl.opengl.GL11.*;
 
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL;
 
 import federation.graphics.model.Mesh;
-import federation.graphics.shader.ShaderProgram;
 import federation.graphics.shader.StaticShader;
 import federation.util.Log;
 
 public class Renderer {
 	
-	ShaderProgram shaderProgram;
+	private StaticShader shaderProgram;
+	private Camera camera;
+	private Matrix4f model, view, projection;
 	
 	public void init() {
 		GL.createCapabilities();
@@ -37,28 +21,31 @@ public class Renderer {
 		
 		glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 		
+		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		shaderProgram = new StaticShader();
-	}
-	
-	public void dispose() {
-		shaderProgram.delete();
+		camera = new Camera();
+		
+		projection = new Matrix4f();
+		projection.setPerspective((float) Math.toRadians(30f), 640f/480f, 0.1f, 100);
 	}
 	
 	public void prepare() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
-	public void render(Mesh mesh) {
+	public void draw(Mesh mesh) {
 		shaderProgram.start();
 		
-		//shaderProgram.loadViewMatrix(camera);
-		//shaderProgram.loadProjectionMatrix(projectionMatrix);
+		shaderProgram.loadViewMatrix(new Matrix4f().rotateXYZ(camera.rotation).translate(camera.pos));
+		shaderProgram.loadProjectionMatrix(projection);
+		shaderProgram.loadModelMatrix(new Matrix4f().identity());
 		//Mesh mesh = entity.getMesh();
 		//entity.getTexture().bind();
 		//Matrix4f transformationMatrix = MathHelper.createTransformationMatrix(entity.getPos(), entity.getRotation(), entity.getScale());
@@ -68,14 +55,25 @@ public class Renderer {
 		mesh.bind();
 		shaderProgram.enableAttribute(0);
 		//shaderProgram.enableAttribute(1);
+		//shaderProgram.enableAttribute(2);
 		
 		glDrawElements(GL_TRIANGLES, mesh.numVertices(), GL_UNSIGNED_INT, 0);
 		
 		shaderProgram.disableAttribute(0);
 		//shaderProgram.disableAttribute(1);
+		//shaderProgram.disableAttribute(2);
 		//entity.getTexture().unbind();
 		mesh.unbind();
 		
 		shaderProgram.stop();
 	}
+	
+	public void setCamera(Camera camera) {
+		this.camera = camera;
+	}
+	
+	public void dispose() {
+		shaderProgram.delete();
+	}
 }
+

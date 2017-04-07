@@ -4,6 +4,7 @@ import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import federation.block.Blocks;
@@ -11,6 +12,7 @@ import federation.graphics.Renderer;
 import federation.graphics.Window;
 import federation.graphics.model.Mesh;
 import federation.graphics.model.MeshLoader;
+import federation.graphics.model.Quad;
 import federation.input.InputHandler;
 import federation.util.Log;
 import federation.world.World;
@@ -22,7 +24,6 @@ public class Game {
 	private boolean initialized;
 	
 	private Window window;
-	private InputHandler inputHandler;
 	private Renderer renderer;
 	private World world;
 	
@@ -40,7 +41,7 @@ public class Game {
 	
 		window = new Window();
 		window.init();
-		inputHandler = new InputHandler(window);
+		InputHandler.setWindow(window);
 		renderer = new Renderer();
 		renderer.init();
 		MeshLoader.init();
@@ -102,18 +103,18 @@ public class Game {
 	public void input() {
 		glfwPollEvents();
 		
-		//InputHandler.update();
+		world.input();
 	}
 	
 	public void update() {
-		//world.update();
+		world.update();
 	}
 	
 	public void render() {
 		glfwSwapBuffers(window.id());
 		renderer.prepare();
 		
-		//world.render(renderer);
+		world.render(renderer);
 	}
 	
 }

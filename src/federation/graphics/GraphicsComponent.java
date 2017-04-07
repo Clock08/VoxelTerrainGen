@@ -4,6 +4,6 @@ import federation.component.GameObject;
 
 public abstract class GraphicsComponent {
 	
-	public abstract void update(GameObject gameObject);
+	public abstract void update(GameObject gameObject, Renderer renderer);
 	
 }

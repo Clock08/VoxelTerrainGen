@@ -43,7 +43,7 @@ public class Terrain {
 			amplitude *= CONTINENT_GAIN;
 		}
 		
-		return (int) ((continentHeight) * 64 + 64);
+		return (int) ((continentHeight) * 64);
 	}
 	
 	public boolean isAir(int x, int y, int z) {

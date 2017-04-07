@@ -1,6 +1,7 @@
 package federation.component;
 
 import federation.graphics.GraphicsComponent;
+import federation.graphics.Renderer;
 import federation.input.InputComponent;
 import federation.physics.PhysicsComponent;
 import federation.world.World;
@@ -19,9 +20,12 @@ public class GameObject {
 		this.graphics = graphics;
 	}
 	
-	public void update(World world) {
-		input.update(this);
-		physics.update(this, world);
-		graphics.update(this);
+	public void update(World world, Renderer renderer) {
+		if (input != null)
+			input.update(this);
+		if (physics != null)
+			physics.update(this, world);
+		if (graphics != null)
+			graphics.update(this, renderer);
 	}
 }

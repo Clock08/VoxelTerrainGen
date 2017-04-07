@@ -7,18 +7,26 @@ import java.util.Map;
 
 import org.joml.Vector3i;
 
+import federation.block.Block;
 import federation.client.Player;
 import federation.graphics.Renderer;
 import federation.terrain.Terrain;
 
 public class World {
 	
+	public static final int NORTH	= 0;
+	public static final int SOUTH	= 1;
+	public static final int EAST	= 2;
+	public static final int WEST	= 3;
+	public static final int TOP		= 4;
+	public static final int BOTTOM	= 5;
+	
 	Player player;
-	private static final int LOAD_DISTANCE = 8;
+	private static final int LOAD_DISTANCE = 0;
 	
 	Terrain terrain;
 	Map<Vector3i, Chunk> chunks;
-	List<Chunk> chunkUpdateList, chunkLoadList, chunkBuildList, chunkUnloadList;
+	List<Chunk> chunkUpdateList, chunkLoadList, chunkBuildList, chunkRenderList, chunkUnloadList;
 	
 	public World() {
 		terrain = new Terrain(0);
@@ -26,11 +34,16 @@ public class World {
 		chunkUpdateList = new ArrayList<Chunk>();
 		chunkLoadList = new ArrayList<Chunk>();
 		chunkBuildList = new ArrayList<Chunk>();
+		chunkRenderList = new ArrayList<Chunk>();
 		chunkUnloadList = new ArrayList<Chunk>();
 		
 		player = new Player();
 		
 		chunkUpdateList.add(createChunk(player.chunkPos()));
+	}
+	
+	public void input() {
+		player.handleInput();
 	}
 	
 	public void update() {
@@ -50,8 +63,10 @@ public class World {
 	}
 	
 	public void render(Renderer renderer) {
-		for (Chunk c : chunkUpdateList) {
-			// renderer.render(c.getMesh());
+		renderer.setCamera(player.camera());
+		
+		for (Chunk c : chunkRenderList) {
+			renderer.draw(c.getMesh());
 		}
 	}
 	
@@ -70,6 +85,7 @@ public class World {
 		
 		if (chunk.isLoaded() && chunk.isDirty()) {
 			chunkBuildList.add(chunk);
+			chunkRenderList.remove(chunk);
 		}
 		
 		if (chunk.numNeighbors() != 6) {
@@ -137,12 +153,12 @@ public class World {
 	
 	private void buildChunk(Chunk chunk) {
 		chunk.build();
+		chunkRenderList.add(chunk);
 	}
 	
 	private void unloadChunk(Chunk chunk) {
-		if (chunkUpdateList.contains(chunk)) {
-			chunkUpdateList.remove(chunk);
-		}
+		chunkRenderList.remove(chunk);
+		chunkUpdateList.remove(chunk);
 		
 		chunk.unload();
 	}
@@ -164,6 +180,11 @@ public class World {
 		
 		chunks.put(chunkPos, chunk);
 		return chunk;
+	}
+	
+	public Block getBlockAt(int x, int y, int z) {
+		return getChunk(new Vector3i(x / Chunk.CHUNK_SIZE, y / Chunk.CHUNK_SIZE, z / Chunk.CHUNK_SIZE))
+		.getBlockAt(x % Chunk.CHUNK_SIZE, y % Chunk.CHUNK_SIZE, z % Chunk.CHUNK_SIZE);
 	}
 	
 }
