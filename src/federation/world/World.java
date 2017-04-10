@@ -10,6 +10,8 @@ import org.joml.Vector3i;
 import federation.block.Block;
 import federation.client.Player;
 import federation.graphics.Renderer;
+import federation.graphics.model.Mesh;
+import federation.graphics.model.Model;
 import federation.terrain.Terrain;
 
 public class World {
@@ -66,7 +68,7 @@ public class World {
 		renderer.setCamera(player.camera());
 		
 		for (Chunk c : chunkRenderList) {
-			renderer.draw(c.getMesh());
+			for (Model m : c.getModels()) renderer.draw(m);
 		}
 	}
 	

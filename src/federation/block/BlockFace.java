@@ -1,11 +1,14 @@
 package federation.block;
 
+import federation.graphics.texture.Texture;
+
 public class BlockFace {
 	
 	public int side;
 	public short type;
 	public int orientation;
 	public boolean transparent;
+	public Texture texture;
 	
 	public boolean equals(Object o) {
 		if (o instanceof BlockFace) {

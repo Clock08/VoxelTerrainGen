@@ -12,7 +12,10 @@ import federation.graphics.Renderer;
 import federation.graphics.Window;
 import federation.graphics.model.Mesh;
 import federation.graphics.model.MeshLoader;
+import federation.graphics.model.Model;
 import federation.graphics.model.Quad;
+import federation.graphics.texture.Texture;
+import federation.graphics.texture.TextureLoader;
 import federation.input.InputHandler;
 import federation.util.Log;
 import federation.world.World;
@@ -20,6 +23,8 @@ import federation.world.World;
 public class Game {
 	
 	public final static double MS_PER_UPDATE = 50;
+	public final static int SCREEN_WIDTH = 1200;
+	public final static int SCREEN_HEIGHT = 720;
 	private boolean running;
 	private boolean initialized;
 	
@@ -39,12 +44,13 @@ public class Game {
 			throw new IllegalStateException("GLFW failed to initialize");
 		}
 	
-		window = new Window();
+		window = new Window(SCREEN_WIDTH, SCREEN_HEIGHT);
 		window.init();
 		InputHandler.setWindow(window);
+		MeshLoader.init();
+		TextureLoader.init();
 		renderer = new Renderer();
 		renderer.init();
-		MeshLoader.init();
 		Blocks.init();
 		world = new World();
 		
@@ -70,6 +76,7 @@ public class Game {
 		Log.log(Log.INFO, "Stopping");
 		running = false;
 		
+		TextureLoader.dispose();
 		MeshLoader.dispose();
 		renderer.dispose();
 		window.dispose();
@@ -112,9 +119,14 @@ public class Game {
 	
 	public void render() {
 		glfwSwapBuffers(window.id());
-		renderer.prepare();
+		renderer.prepareGeometryPass();
 		
 		world.render(renderer);
+		
+		renderer.endGeometryPass();
+		
+		renderer.render();
+		renderer.renderDebug();
 	}
 	
 }

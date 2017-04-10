@@ -7,18 +7,17 @@ import org.lwjgl.glfw.GLFW;
 import federation.core.Game;
 import federation.graphics.Camera;
 import federation.input.InputHandler;
+import federation.world.Chunk;
 
 public class Player {
 	
 	public static final int VIEW_DISTANCE = 2;
 	
 	private Vector3f pos;
-	private Vector3i chunkPos;
 	private Camera camera;
 	
 	public Player() {
 		pos = new Vector3f();
-		chunkPos = new Vector3i();
 		camera = new Camera();
 	}
 	
@@ -27,7 +26,9 @@ public class Player {
 	}
 	
 	public Vector3i chunkPos() {
-		return new Vector3i(chunkPos);
+		return new Vector3i(1).mul((int)(pos.x/Chunk.CHUNK_SIZE-0.5f),	// Move player's chunk pos to center rather than corner
+				(int)(pos.y/Chunk.CHUNK_SIZE+0.5f),
+				(int)(pos.z/Chunk.CHUNK_SIZE-0.5f));
 	}
 	
 	public Camera camera() {
@@ -73,6 +74,9 @@ public class Player {
 		if (InputHandler.isKeyDown(GLFW.GLFW_KEY_RIGHT)) {
 			camera.rotation.y += rotSpeed / 1000 * Game.MS_PER_UPDATE;
 		}
+		
+		this.pos.set(camera.pos);
+		this.pos.mul(-1);	// Camera moves opp to game world
 	}
 	
 }

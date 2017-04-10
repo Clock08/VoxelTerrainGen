@@ -35,7 +35,7 @@ public class Shader {
 			glGetShaderiv(shader, GL_COMPILE_STATUS, success);
 			
 			if (success.get(0) != GL_TRUE) {
-				Log.log(Log.FATAL, "Shader compilation failed: \n" + glGetShaderInfoLog(shader));
+				Log.log(Log.FATAL, "Shader compilation failed \""+shaderPath+"\": \n" + glGetShaderInfoLog(shader));
 				throw new RuntimeException("Shader failed to compile");
 			}
 		}

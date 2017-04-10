@@ -5,10 +5,10 @@ import java.util.Random;
 public class Terrain {
 	
 	private static final int CONTINENT_OCTAVES = 4;
-	private static final double CONTINENT_FREQUENCY = 1;
-	private static final double CONTINENT_AMPLITUDE = 2;
+	private static final double CONTINENT_FREQUENCY = 0.01;
+	private static final double CONTINENT_AMPLITUDE = 1;
 	private static final double CONTINENT_LACUNARITY = 2;
-	private static final double CONTINENT_GAIN = 0.5;
+	private static final double CONTINENT_GAIN = 0.05;
 	
 	private long seed;
 	private long continentSeed;

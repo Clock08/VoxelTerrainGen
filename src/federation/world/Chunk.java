@@ -1,30 +1,35 @@
 package federation.world;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import federation.block.Block;
 import federation.block.BlockAir;
+import federation.block.BlockDirt;
 import federation.block.BlockFace;
 import federation.block.BlockRegistry;
 import federation.block.BlockStone;
-import federation.graphics.model.Mesh;
+import federation.block.BlockWater;
 import federation.graphics.model.MeshLoader;
+import federation.graphics.model.Model;
 import federation.graphics.model.Quad;
+import federation.graphics.model.TexturedQuad;
 import federation.terrain.Terrain;
 
 public class Chunk {
 	
-	public static final int CHUNK_SIZE = 8;
+	public static final int CHUNK_SIZE = 32;
 	
 	private Short[][][] blocks;
 	private Chunk north, south, east, west, top, bottom;
 	private int numNeighbors = 0;
 	private Vector3i chunkPos;
-	private Mesh mesh;
+	private List<Model> models;
 	
 	private boolean isLoaded;
 	private boolean isDirty;
@@ -32,6 +37,7 @@ public class Chunk {
 	
 	public Chunk(Vector3i chunkPos) {
 		this.chunkPos = chunkPos;
+		models = new ArrayList<Model>();
 		
 		blocks = new Short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		numNeighbors = 0;
@@ -56,10 +62,13 @@ public class Chunk {
 				for (int x = 0; x < CHUNK_SIZE; x++) {
 					Short block;
 					
-					if (terrain.isAir(x, y, z)) {
-						block = BlockRegistry.getBlockId(BlockAir.class);
-					} else {
+					if (terrain.isAir(x+chunkPos.x*CHUNK_SIZE, y+chunkPos.y*CHUNK_SIZE, z+chunkPos.z*CHUNK_SIZE)) {
+						if (y+chunkPos.y*CHUNK_SIZE >= 0) block = BlockRegistry.getBlockId(BlockAir.class);
+						else block = BlockRegistry.getBlockId(BlockWater.class);
+					} else if (Math.random() * 10 < 3) {
 						block = BlockRegistry.getBlockId(BlockStone.class);
+					} else {
+						block = BlockRegistry.getBlockId(BlockDirt.class);
 					}
 					
 					blocks[x][y][z] = block;
@@ -94,8 +103,10 @@ public class Chunk {
 			bottom.setTopNeighbor(null);
 		}
 		
-		MeshLoader.deleteMesh(mesh);
-		
+		for (Model m : models) {
+			MeshLoader.deleteMesh(m.getMesh());
+		}
+			
 		// TODO: Save to file
 		
 		isLoaded = false;
@@ -109,8 +120,8 @@ public class Chunk {
 		isDirty = false;
 	}
 	
-	public Mesh getMesh() {
-		return mesh;
+	public List<Model> getModels() {
+		return models;
 	}
 	
 	public boolean isLoaded() {
@@ -227,7 +238,7 @@ public class Chunk {
 	
 	
 	private void greedyMesh() {
-		List<Quad> quads = new ArrayList<Quad>();
+		Map<Short, List<TexturedQuad>> quadMatrix = new HashMap<Short, List<TexturedQuad>>();
 		
 		BlockFace[] mask = new BlockFace[CHUNK_SIZE * CHUNK_SIZE];
 		BlockFace bf1, bf2;
@@ -263,7 +274,7 @@ public class Chunk {
 						for (x[u] = 0; x[u] < CHUNK_SIZE; x[u]++) {
 							bf1 = 0 <= x[dim] ? getBlockFace(x[0], x[1], x[2], side) : null;
 							bf2 = x[dim] < CHUNK_SIZE-1 ? getBlockFace(x[0]+q[0], x[1]+q[1], x[2]+q[2], side) : null;
-							if (bf1 != null && bf2 != null && bf1.equals(bf2)) mask[n] = null;
+							if (bf1 != null && bf2 != null && (!bf1.transparent && !bf2.transparent)) mask[n] = null;
 							else if (backFace) mask[n] = bf2;
 							else mask[n] = bf1;
 							n++;
@@ -299,16 +310,18 @@ public class Chunk {
 								dv[1] = 0;
 								dv[2] = 0;
 								dv[v] = h;
-									
-								Vector3f topLeft = new Vector3f(x[0] + du[0], x[1] + du[1], x[2] + du[2]);
-								Vector3f topRight = new Vector3f(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]);
-								Vector3f bottomLeft = new Vector3f(x[0], x[1], x[2]);
-								Vector3f bottomRight = new Vector3f(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]);
 								
+								Vector3f translation = new Vector3f(chunkPos.x, chunkPos.y, chunkPos.z).mul(CHUNK_SIZE);
+								Vector3f topLeft = new Vector3f(x[0] + du[0], x[1] + du[1], x[2] + du[2]).add(translation);
+								Vector3f topRight = new Vector3f(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]).add(translation);
+								Vector3f bottomLeft = new Vector3f(x[0], x[1], x[2]).add(translation);
+								Vector3f bottomRight = new Vector3f(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]).add(translation);
+								
+								if (!quadMatrix.containsKey(mask[n].type)) quadMatrix.put(mask[n].type, new ArrayList<TexturedQuad>());
 								if (!backFace)
-									quads.add(Quad.createQuad(topRight, topLeft, bottomRight, bottomLeft));
+									quadMatrix.get(mask[n].type).add(Quad.createTexturedQuad(topRight, topLeft, bottomRight, bottomLeft, 1, 1, mask[n].texture));
 								else
-									quads.add(Quad.createQuad(topLeft, topRight, bottomLeft, bottomRight));
+									quadMatrix.get(mask[n].type).add(Quad.createTexturedQuad(topLeft, topRight, bottomLeft, bottomRight, 1, 1, mask[n].texture));
 								
 								for (l = 0; l < h; l++) {
 									for (k = 0; k < w; k++) {
@@ -328,7 +341,14 @@ public class Chunk {
 			}
 		}
 		
-		mesh = MeshLoader.createMesh(quads.toArray(new Quad[quads.size()]));
+		for (List<TexturedQuad> quadList : quadMatrix.values()) {
+			TexturedQuad[] tquads = quadList.toArray(new TexturedQuad[quadList.size()]);
+			Quad[] quads = new Quad[tquads.length];
+			for (i = 0; i < quads.length; i++) {
+				quads[i] = tquads[i].getQuad();
+			}
+			models.add(MeshLoader.createModel(quads, tquads[0].getTexture()));
+		}
 	}
 	
 	BlockFace getBlockFace(int x, int y, int z, int side) {

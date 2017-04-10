@@ -16,6 +16,11 @@ public class Window {
 	private long window;
 	int width, height;
 	
+	public Window(int width, int height) {
+		this.width = width;
+		this.height = height;
+	}
+	
 	public void init() {
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -25,7 +30,7 @@ public class Window {
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		
-		window = glfwCreateWindow(640, 480, "Test", NULL, NULL);
+		window = glfwCreateWindow(1200, 720, "Federation", NULL, NULL);
 		if (window == NULL) {
 			glfwTerminate();
 			Log.log(Log.FATAL, "Failed to create a GLFW window");

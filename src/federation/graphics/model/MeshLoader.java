@@ -12,7 +12,8 @@ import java.util.List;
 
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.system.CallbackI.V;
+
+import federation.graphics.texture.Texture;
 
 public class MeshLoader {
 	
@@ -70,13 +71,13 @@ public class MeshLoader {
 	
 	public static Mesh createMesh(Quad[] quads) {
 		List<Vector3f> vertexList = new ArrayList<Vector3f>();
+		List<Vector3f> normalList = new ArrayList<Vector3f>();
 		List<Integer> indexList = new ArrayList<Integer>();
 		float[] vertices = new float[quads.length * 12];	// Each quad has 4 vertices of 3 coordinates
 		float[] texcoords = new float[quads.length * 8];	// Each quad has 4 vertices and 2 uv coords
 		float[] normals = new float[quads.length * 12];		// Each quad has a Vector3f normal per vertex
 		int[] indices = new int[quads.length * 6];			// Each quad has 6 indices
 		
-		int i = 0;
 		for (Quad q : quads) {
 			int v0, v1, v2, v3;
 			vertexList.add(q.v0);
@@ -88,14 +89,30 @@ public class MeshLoader {
 			vertexList.add(q.v3);
 			v3 = vertexList.size()-1;
 			
+			normalList.add(q.n0);
+			normalList.add(q.n0);
+			normalList.add(q.n1);
+			normalList.add(q.n1);
+			
 			indexList.add(v0);
 			indexList.add(v1);
 			indexList.add(v2);
 			indexList.add(v2);
 			indexList.add(v1);
 			indexList.add(v3);
-			
-			//i+=4;
+		}
+		
+		int i;
+		for (i = 0; i < texcoords.length; i+=8) {
+			Quad quad = quads[i/8];
+			texcoords[i] = quad.textureCoords[0];
+			texcoords[i+1] = quad.textureCoords[1];
+			texcoords[i+2] = quad.textureCoords[2];
+			texcoords[i+3] = quad.textureCoords[3];
+			texcoords[i+4] = quad.textureCoords[4];
+			texcoords[i+5] = quad.textureCoords[5];
+			texcoords[i+6] = quad.textureCoords[6];
+			texcoords[i+7] = quad.textureCoords[7];
 		}
 		
 		for (i = 0; i < vertices.length; i+=3) {
@@ -103,15 +120,27 @@ public class MeshLoader {
 			vertices[i] = v.x;
 			vertices[i+1] = v.y;
 			vertices[i+2] = v.z;
+			Vector3f n = normalList.get(i/3);
+			normals[i] = n.x;
+			normals[i+1] = n.y;
+			normals[i+2] = n.z;
 		}
 	 	
 		for (i = 0; i < indices.length; i++) {
 			indices[i] = indexList.get(i);
 		}
 		
-		//return createMesh(vertices, texcoords, normals, indices);
-		return createMesh(vertices, indices);
+		return createMesh(vertices, texcoords, normals, indices);
 	}
+	
+	public static Model createModel(Quad quad, Texture texture) {
+		return new Model(createMesh(quad), texture);
+	}
+	
+	public static Model createModel(Quad[] quads, Texture texture) {
+		return new Model(createMesh(quads), texture);
+	}
+	
 	/*public static Mesh createMesh(Quad[] quads) {
 		List<Vector3f> vertexList = new ArrayList<Vector3f>();
 		List<Vector3f> normalList = new ArrayList<Vector3f>();
@@ -180,6 +209,12 @@ public class MeshLoader {
 	public static void deleteMesh(Mesh mesh) {
 		if (meshes.remove(mesh)) {
 			mesh.delete();
+		}
+	}
+	
+	public static void deleteMesh(Model model) {
+		if (meshes.remove(model.getMesh())) {
+			model.getMesh().delete();
 		}
 	}
 	

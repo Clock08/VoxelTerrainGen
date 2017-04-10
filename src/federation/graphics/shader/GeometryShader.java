@@ -2,12 +2,12 @@ package federation.graphics.shader;
 
 import org.joml.Matrix4f;
 
-public class StaticShader extends ShaderProgram {
+public class GeometryShader extends ShaderProgram {
 
-	private static final String VERTEX_SHADER = "res/shaders/main.vs";
-	private static final String FRAGMENT_SHADER = "res/shaders/main.fs";
+	private static final String VERTEX_SHADER = "res/shaders/static.vs";
+	private static final String FRAGMENT_SHADER = "res/shaders/static.fs";
 	
-	public StaticShader() {
+	public GeometryShader() {
 		super();
 		
 		VertexShader vs = new VertexShader(VERTEX_SHADER);
@@ -16,6 +16,8 @@ public class StaticShader extends ShaderProgram {
 		attachShader(fs);
 		link();
 		bindAttribute(0, "position");
+		bindAttribute(1, "texCoords");
+		bindAttribute(2, "normal");
 		vs.delete();
 		fs.delete();
 	}

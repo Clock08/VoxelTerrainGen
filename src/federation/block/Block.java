@@ -1,5 +1,7 @@
 package federation.block;
 
+import federation.graphics.texture.Texture;
+import federation.graphics.texture.TextureLoader;
 import federation.world.World;
 
 public abstract class Block {
@@ -8,12 +10,14 @@ public abstract class Block {
 	private boolean solid;
 	private boolean transparent;
 	private boolean isFullBlock;
+	private Texture texture;
 	
 	public Block(String name) {
 		this.name = name;
-		this.solid = true;
-		this.transparent = false;
-		this.isFullBlock = true;
+		setSolid(true);
+		setTransparent(false);
+		setFullBlock(true);
+		setTexture(name+".png");
 	}
 	
 	protected final void setSolid(boolean solid) {
@@ -26,6 +30,10 @@ public abstract class Block {
 	
 	protected final void setFullBlock(boolean isFullBlock) {
 		this.isFullBlock = isFullBlock;
+	}
+	
+	protected final void setTexture(String texture) {
+		this.texture = TextureLoader.getTexture("blocks/"+texture);
 	}
 	
 	public String getName() {
@@ -50,6 +58,7 @@ public abstract class Block {
 		BlockFace face = new BlockFace();
 		face.type = BlockRegistry.getBlockId(this.getClass());
 		face.transparent = this.transparent;
+		face.texture = this.texture;
 		
 		switch (side) {
 		case World.NORTH:

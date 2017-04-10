@@ -22,6 +22,7 @@ import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.logging.Level;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
