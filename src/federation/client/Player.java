@@ -62,18 +62,11 @@ public class Player {
 			camera.pos.y += speed / 1000 * Game.MS_PER_UPDATE;
 		}
 		
-		if (InputHandler.isKeyDown(GLFW.GLFW_KEY_UP)) {
-			camera.rotation.x -= rotSpeed / 1000 * Game.MS_PER_UPDATE;
-		}
-		if (InputHandler.isKeyDown(GLFW.GLFW_KEY_DOWN)) {
-			camera.rotation.x += rotSpeed / 1000 * Game.MS_PER_UPDATE;
-		}
-		if (InputHandler.isKeyDown(GLFW.GLFW_KEY_LEFT)) {
-			camera.rotation.y -= rotSpeed / 1000 * Game.MS_PER_UPDATE;
-		}
-		if (InputHandler.isKeyDown(GLFW.GLFW_KEY_RIGHT)) {
-			camera.rotation.y += rotSpeed / 1000 * Game.MS_PER_UPDATE;
-		}
+		float sensitivity = 0.01f;
+		float deltaPitch = (float) InputHandler.mouseDeltaY() * sensitivity;
+		float deltaYaw = (float) InputHandler.mouseDeltaX() * sensitivity;
+		camera.rotation.x += deltaPitch;
+		camera.rotation.y += deltaYaw;
 		
 		this.pos.set(camera.pos);
 		this.pos.mul(-1);	// Camera moves opp to game world

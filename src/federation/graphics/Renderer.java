@@ -1,10 +1,14 @@
 package federation.graphics;
 
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 
+import java.nio.IntBuffer;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
 import federation.core.Game;
@@ -21,6 +25,8 @@ import federation.util.Log;
 
 public class Renderer {
 	
+	private Window window;
+	
 	private GBuffer gBuffer;
 	private GeometryShader geometryShader;
 	private LightingShader lightShader;
@@ -29,6 +35,10 @@ public class Renderer {
 	
 	private Camera camera;
 	private Matrix4f projection;
+	
+	public Renderer(Window window) {
+		this.window = window;
+	}
 	
 	public void init() {
 		GL.createCapabilities();
@@ -54,19 +64,27 @@ public class Renderer {
 		
 		camera = new Camera();
 		
+		IntBuffer bWidth = BufferUtils.createIntBuffer(1);
+		IntBuffer bHeight = BufferUtils.createIntBuffer(1);
+		glfwGetFramebufferSize(window.id(), bWidth, bHeight);
+		// TODO FIX THIS
+		glViewport(0, 0, bWidth.get(0), bHeight.get(0));
+		
 		projection = new Matrix4f();
-		projection.setPerspective((float) Math.toRadians(30f), (float)Game.SCREEN_WIDTH/Game.SCREEN_HEIGHT, 0.1f, 1000);
+		projection.setPerspective((float) Math.toRadians(45f), (float)Game.SCREEN_WIDTH/Game.SCREEN_HEIGHT, 0.1f, 1000);
+		System.out.println(projection.m20() + " " + projection.m21());
+		projection.m20(0.5f);
+		projection.m21(0.5f);
 	}
 	
 	public void prepareGeometryPass() {
 		gBuffer.bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		geometryShader.start();
-		//TextureLoader.getTexture("/blocks/blockStone.png").bind();
 	}
 	
 	public void draw(Model model) {
-		geometryShader.loadViewMatrix(new Matrix4f().rotateXYZ(camera.rotation).translate(camera.pos));
+		geometryShader.loadViewMatrix(new Matrix4f().identity().rotateXYZ(camera.rotation).translate(camera.pos));
 		geometryShader.loadProjectionMatrix(projection);
 		geometryShader.loadModelMatrix(new Matrix4f().identity());
 		
@@ -101,9 +119,12 @@ public class Renderer {
 		gBuffer.bindNormalTexture();
 		glActiveTexture(GL_TEXTURE2);
 		gBuffer.bindColorTexture();
+		glActiveTexture(GL_TEXTURE0);
+		lightShader.loadLight();
 		lightShader.loadViewPos(camera.pos);
 		
 		renderQuad();
+		
 		
 		lightShader.stop();
 	}
@@ -125,7 +146,7 @@ public class Renderer {
 		debugShader.start();
 		
 		glActiveTexture(GL_TEXTURE0);
-		gBuffer.bindColorTexture();
+		gBuffer.bindPositionTexture();
 		debugQuad.bind();
 		debugShader.enableAttribute(0);
 		debugShader.enableAttribute(1);

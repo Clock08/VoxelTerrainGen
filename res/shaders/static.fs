@@ -19,5 +19,5 @@ void main()
     
     gAlbedoSpec.rgb = texture(texDiffuse, TexCoords).rgb;
     
-    gAlbedoSpec.a = 1;//texture(texSpecular, TexCoords).r;
+    gAlbedoSpec.a = 0;//texture(texSpecular, TexCoords).r;
 } 

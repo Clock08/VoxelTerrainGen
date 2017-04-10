@@ -27,6 +27,13 @@ public class LightingShader extends ShaderProgram {
 		stop();
 	}
 	
+	public void loadLight() {
+		setUniform("lights[0].Position", new Vector3f(0, 0f, 0));
+		setUniform("lights[0].Color", new Vector3f(1000.0f));
+		setUniform("lights[0].Linear", 0.7f);
+		setUniform("lights[0].Quadratic", 1.8f);
+	}
+	
 	public void loadViewPos(Vector3f viewPos) {
 		setUniform("viewPos", viewPos);
 	}

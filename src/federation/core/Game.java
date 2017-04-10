@@ -31,6 +31,7 @@ public class Game {
 	private Window window;
 	private Renderer renderer;
 	private World world;
+	private Model model;
 	
 	public void init() throws IllegalStateException {
 		if (initialized) {
@@ -49,10 +50,13 @@ public class Game {
 		InputHandler.setWindow(window);
 		MeshLoader.init();
 		TextureLoader.init();
-		renderer = new Renderer();
+		renderer = new Renderer(window);
 		renderer.init();
 		Blocks.init();
 		world = new World();
+		Mesh mesh = MeshLoader.createMesh(Quad.createQuad(new Vector3f(-1, 1, -5), new Vector3f(1, 1, -5), new Vector3f(-1, -1, -5), new Vector3f(1, -1, -5)));
+		Texture texture = TextureLoader.getTexture("/blocks/blockWater.png");
+		model = new Model(mesh, texture);
 		
 		initialized = true;
 		Log.log(Log.INFO, "Finished initialization");
@@ -122,11 +126,12 @@ public class Game {
 		renderer.prepareGeometryPass();
 		
 		world.render(renderer);
+		renderer.draw(model);
 		
 		renderer.endGeometryPass();
 		
 		renderer.render();
-		renderer.renderDebug();
+		//renderer.renderDebug();
 	}
 	
 }
