@@ -28,8 +28,8 @@ public class BlockRegistry {
 		return getBlock(indexRegister.get(id));
 	}
 	
-	public static Short getBlockId(Class<? extends Block> block) {
-		return (short) indexRegister.indexOf(block);
+	public static Integer getBlockId(Class<? extends Block> block) {
+		return indexRegister.indexOf(block);
 	}
 	
 }

@@ -5,7 +5,7 @@ import federation.graphics.texture.Texture;
 public class BlockFace {
 	
 	public int side;
-	public short type;
+	public int type;
 	public int orientation;
 	public boolean transparent;
 	public Texture texture;

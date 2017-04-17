@@ -71,7 +71,7 @@ public class Renderer {
 		glViewport(0, 0, bWidth.get(0), bHeight.get(0));
 		
 		projection = new Matrix4f();
-		projection.setPerspective((float) Math.toRadians(45f), (float)Game.SCREEN_WIDTH/Game.SCREEN_HEIGHT, 0.1f, 1000);
+		projection.setPerspective((float) Math.toRadians(90f), (float)Game.SCREEN_WIDTH/Game.SCREEN_HEIGHT, 0.1f, 1000);
 		System.out.println(projection.m20() + " " + projection.m21());
 		projection.m20(0.5f);
 		projection.m21(0.5f);

@@ -24,7 +24,7 @@ public class World {
 	public static final int BOTTOM	= 5;
 	
 	Player player;
-	private static final int LOAD_DISTANCE = 0;
+	private static final int LOAD_DISTANCE = 4;
 	
 	Terrain terrain;
 	Map<Vector3i, Chunk> chunks;
@@ -56,7 +56,7 @@ public class World {
 		Chunk[] chunks = chunkUpdateList.toArray(new Chunk[chunkUpdateList.size()]);
 		for (Chunk c : chunks)
 			updateChunk(c);
-		for (Chunk c : chunkLoadList)
+		for (Chunk c : chunkLoadList) 
 			loadChunk(c);
 		for (Chunk c : chunkBuildList)
 			buildChunk(c);

@@ -25,7 +25,7 @@ public class Chunk {
 	
 	public static final int CHUNK_SIZE = 32;
 	
-	private Short[][][] blocks;
+	private Integer[][][] blocks;
 	private Chunk north, south, east, west, top, bottom;
 	private int numNeighbors = 0;
 	private Vector3i chunkPos;
@@ -39,7 +39,7 @@ public class Chunk {
 		this.chunkPos = chunkPos;
 		models = new ArrayList<Model>();
 		
-		blocks = new Short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+		blocks = new Integer[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		numNeighbors = 0;
 		
 		north = null;
@@ -57,10 +57,17 @@ public class Chunk {
 	public void load(Terrain terrain) {
 		if (isLoaded) return;
 		
+		for (Model m : models) {
+			MeshLoader.deleteMesh(m.getMesh());
+		}
+		models.clear();
+		isEmpty = false;
+		isDirty = false;
+		
 		for (int z = 0; z < CHUNK_SIZE; z++) {
 			for (int y = 0; y < CHUNK_SIZE; y++) {
 				for (int x = 0; x < CHUNK_SIZE; x++) {
-					Short block;
+					int block;
 					
 					if (terrain.isAir(x+chunkPos.x*CHUNK_SIZE, y+chunkPos.y*CHUNK_SIZE, z+chunkPos.z*CHUNK_SIZE)) {
 						if (y+chunkPos.y*CHUNK_SIZE >= 0) block = BlockRegistry.getBlockId(BlockAir.class);
@@ -71,6 +78,10 @@ public class Chunk {
 						block = BlockRegistry.getBlockId(BlockDirt.class);
 					}
 					
+					if (block != 0) {
+						isEmpty = false;
+						isDirty = true;
+					}
 					blocks[x][y][z] = block;
 				}
 			}
@@ -78,7 +89,6 @@ public class Chunk {
 		// TODO: Load from file + terrain
 		
 		isLoaded = true;
-		isDirty = true;
 	}
 	
 	public void unload() {
@@ -106,6 +116,7 @@ public class Chunk {
 		for (Model m : models) {
 			MeshLoader.deleteMesh(m.getMesh());
 		}
+		models.clear();
 			
 		// TODO: Save to file
 		
@@ -113,7 +124,7 @@ public class Chunk {
 	}
 	
 	public void build() {
-		if (!isDirty) return;
+		if (!isDirty || isEmpty) return;
 		
 		greedyMesh();
 		
@@ -238,7 +249,7 @@ public class Chunk {
 	
 	
 	private void greedyMesh() {
-		Map<Short, List<TexturedQuad>> quadMatrix = new HashMap<Short, List<TexturedQuad>>();
+		Map<Integer, List<TexturedQuad>> quadMatrix = new HashMap<Integer, List<TexturedQuad>>();
 		
 		BlockFace[] mask = new BlockFace[CHUNK_SIZE * CHUNK_SIZE];
 		BlockFace bf1, bf2;

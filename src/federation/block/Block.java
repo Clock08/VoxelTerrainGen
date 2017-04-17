@@ -12,12 +12,17 @@ public abstract class Block {
 	private boolean isFullBlock;
 	private Texture texture;
 	
+	private BlockFace face;
+	
 	public Block(String name) {
 		this.name = name;
 		setSolid(true);
 		setTransparent(false);
 		setFullBlock(true);
 		setTexture(name+".png");
+		
+		face = new BlockFace();
+		face.texture = this.texture;
 	}
 	
 	protected final void setSolid(boolean solid) {
@@ -55,31 +60,9 @@ public abstract class Block {
 	
 	
 	public BlockFace getFace(int side) {
-		BlockFace face = new BlockFace();
 		face.type = BlockRegistry.getBlockId(this.getClass());
 		face.transparent = this.transparent;
-		face.texture = this.texture;
-		
-		switch (side) {
-		case World.NORTH:
-			face.side = World.NORTH;
-			break;
-		case World.SOUTH:
-			face.side = World.SOUTH;
-			break;
-		case World.EAST:
-			face.side = World.EAST;
-			break;
-		case World.WEST:
-			face.side = World.WEST;
-			break;
-		case World.TOP:
-			face.side = World.TOP;
-			break;
-		case World.BOTTOM:
-			face.side = World.BOTTOM;
-			break;
-		}
+		face.side = side;
 		
 		return face;
 	}
